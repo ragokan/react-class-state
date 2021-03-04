@@ -1,14 +1,10 @@
 import React, { useReducer } from "react"
 
-type GetStateSettings = {
-  vanilla?: boolean
-}
 type StateSubscriber<T = Object> = (currentState: T, previousState: T) => void
 
 export class ClassState {
   private force: React.DispatchWithoutAction | undefined
   private subscribers = new Set<StateSubscriber<this>>()
-  count: number = 5
 
   public async setState(
     setter: (((currentState: this) => Partial<this>) | Partial<this>) | ((state: this) => Promise<void> | void)
@@ -23,13 +19,13 @@ export class ClassState {
     this.reRenderState()
   }
 
-  public getState(settings: GetStateSettings = {}): this {
-    if (!settings.vanilla) this.initForce()
+  public getState(): this {
     return this
   }
 
-  public watchState(): void {
+  public useState(): this {
     this.initForce()
+    return this
   }
 
   public subscribeState(subscriber: StateSubscriber<this>): StateSubscriber<this> {
@@ -46,12 +42,5 @@ export class ClassState {
     this.force && this.force()
   }
 }
-
-const myClass = new ClassState()
-console.log(myClass.getState({ vanilla: true }))
-
-myClass.setState({ count: 6 })
-
-console.log(myClass.getState({ vanilla: true }))
 
 export default ClassState
