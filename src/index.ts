@@ -8,20 +8,19 @@ type StateSubscriber<T = Object> = (currentState: T, previousState: T) => void
 export class ClassState {
   private force: React.DispatchWithoutAction | undefined
   private subscribers = new Set<StateSubscriber<this>>()
+  count: number = 5
 
-  public async updateState(updater: (state: this) => Promise<void> | void): Promise<void> {
+  public async setState(
+    setter: (((currentState: this) => Partial<this>) | Partial<this>) | ((state: this) => Promise<void> | void)
+  ) {
+    let nextState: void | Partial<this> | Promise<void>
     const previousState = { ...this }
-    await updater(this)
-    const currentState = this
-    this.subscribers.forEach((sub) => sub(currentState, previousState))
-    this.reRenderState()
-  }
-
-  public async setState(set: ((currentState: this) => Partial<this>) | Partial<this>) {
-    const nextState = typeof set === "function" ? set(this) : set
-    const previousState = { ...this }
-    Object.assign(this, nextState)
+    if (!(typeof setter === "function" && !setter(this))) {
+      nextState = typeof setter === "function" ? setter(this) : setter
+      Object.assign(this, nextState)
+    }
     this.subscribers.forEach((sub) => sub(this, previousState))
+    this.reRenderState()
   }
 
   public getState(settings: GetStateSettings = {}): this {
@@ -49,5 +48,10 @@ export class ClassState {
 }
 
 const myClass = new ClassState()
+console.log(myClass.getState({ vanilla: true }))
+
+myClass.setState({ count: 6 })
+
+console.log(myClass.getState({ vanilla: true }))
 
 export default ClassState
