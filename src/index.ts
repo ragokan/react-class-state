@@ -3,19 +3,25 @@ import React, { useReducer } from "react"
 type GetStateSettings = {
   vanilla?: boolean
 }
-type StateSubscriber<T> = (currentState: T, previousState: T) => void
+type StateSubscriber<T = Object> = (currentState: T, previousState: T) => void
 
 export class ClassState {
-  public count = 5
   private force: React.DispatchWithoutAction | undefined
   private subscribers = new Set<StateSubscriber<this>>()
 
-  public async setState(setter: (state: this) => Promise<void> | void): Promise<void> {
+  public async updateState(updater: (state: this) => Promise<void> | void): Promise<void> {
     const previousState = { ...this }
-    await setter(this)
+    await updater(this)
     const currentState = this
     this.subscribers.forEach((sub) => sub(currentState, previousState))
-    this.updateState()
+    this.reRenderState()
+  }
+
+  public async setState(set: ((currentState: this) => Partial<this>) | Partial<this>) {
+    const nextState = typeof set === "function" ? set(this) : set
+    const previousState = { ...this }
+    Object.assign(this, nextState)
+    this.subscribers.forEach((sub) => sub(this, previousState))
   }
 
   public getState(settings: GetStateSettings = {}): this {
@@ -37,10 +43,11 @@ export class ClassState {
     this.force = force
   }
 
-  private updateState(): void {
+  private reRenderState(): void {
     this.force && this.force()
   }
 }
 
-// You can use whichever you want as export
+const myClass = new ClassState()
+
 export default ClassState
