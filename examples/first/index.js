@@ -5,7 +5,7 @@ import ReactDOM from "react-dom"
 class TodoState extends ClassState {
   todos = []
 
-  async fetchTodos() {
+  fetchTodos = async () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/todos")
     const data = await response.json()
     this.setState((state) => (state.todos = data))
@@ -15,7 +15,7 @@ const todoState = new TodoState()
 todoState.fetchTodos()
 
 const App = () => {
-  const { todos } = todoState.getState()
+  const { todos } = todoState.useState()
   return (
     <div>
       {todos.map((todo) => (

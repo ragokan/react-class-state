@@ -8,7 +8,7 @@ class TodoState extends ClassState {
 const todoState = new TodoState()
 
 const App = () => {
-  const { todos, setState } = todoState.getState()
+  const { todos, setState } = todoState.useState()
   useEffect(() => {
     const fetchTodos = async () => {
       const response = await fetch("https://jsonplaceholder.typicode.com/todos")

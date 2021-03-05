@@ -8,7 +8,7 @@ class TodoState extends ClassState {
 const todoState = new TodoState()
 
 const App = () => {
-  todoState.watchState()
+  todoState.useState()
 
   useEffect(() => {
     const fetchTodos = async () => {

@@ -15,10 +15,10 @@ const todoState = new TodoState()
 todoState.fetchTodos()
 
 const App = () => {
-  todoState.watchState()
+  const { todos } = todoState.useState()
   return (
     <div>
-      {todoState.todos.map((todo) => (
+      {todos.map((todo) => (
         <div key={todo.id}>{todo.title}</div>
       ))}
     </div>
