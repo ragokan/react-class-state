@@ -8,7 +8,7 @@ export declare class ClassState {
     setState: (setter: Partial<Hide<this>> | ((currentState: Hide<this>) => Partial<Hide<this>>) | ((state: Hide<this>) => void)) => Promise<void>;
     getState: () => HideGet<this>;
     useState: () => HideUse<this>;
-    subscribeState: (subscriber: StateSubscriber<this>) => StateSubscriber<this>;
+    subscribeState: (subscriber: StateSubscriber<this>) => () => boolean;
     private initForce;
     private reRenderState;
 }

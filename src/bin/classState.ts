@@ -1,4 +1,5 @@
 import React, { useReducer } from "react"
+
 type StateSubscriber<T = Object> = (currentState: T, previousState: T) => void
 type Hide<T> = Pick<T, Exclude<keyof T, "useState" | "getState" | "setState" | "subscribeState">>
 type HideGet<T> = Pick<T, Exclude<keyof T, "getState">>

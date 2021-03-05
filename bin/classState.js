@@ -15,32 +15,49 @@ class ClassState {
     constructor() {
         this.subscribers = new Set();
         this.setState = (setter) => __awaiter(this, void 0, void 0, function* () {
-            let nextState;
-            const previousState = Object.assign({}, this);
-            if (!(typeof setter === "function" && !(yield setter(this)))) {
-                nextState = typeof setter === "function" ? yield setter(this) : setter;
-                Object.assign(this, nextState);
+            try {
+                const previousState = Object.assign({}, this);
+                if (!(typeof setter === "function" && !(yield setter(this)))) {
+                    const nextState = typeof setter === "function" ? yield setter(this) : setter;
+                    Object.assign(this, nextState);
+                }
+                if (JSON.stringify(this) !== JSON.stringify(previousState)) {
+                    this.subscribers.forEach((sub) => sub(this, previousState));
+                    this.reRenderState();
+                }
             }
-            this.subscribers.forEach((sub) => sub(this, previousState));
-            this.reRenderState();
+            catch (error) {
+                console.log(error || "An error happened while changing the state!");
+            }
         });
         this.getState = () => {
             return this;
         };
         this.useState = () => {
-            this.initForce();
+            try {
+                this.initForce();
+            }
+            catch (error) {
+                const errorMessage = "\n An error happened while trying to init the state, it is probably because you are using 'useState' function outside of React function component.";
+                console.log(error ? error + errorMessage : errorMessage);
+            }
             return this;
         };
         this.subscribeState = (subscriber) => {
             this.subscribers.add(subscriber);
-            return subscriber;
+            return () => this.subscribers.delete(subscriber);
         };
         this.initForce = () => {
             const [, force] = react_1.useReducer((c) => c + 1, 0);
             this.force = force;
         };
         this.reRenderState = () => {
-            this.force && this.force();
+            try {
+                this.force && this.force();
+            }
+            catch (error) {
+                console.log(error || "An error happened while re-rendering the state!");
+            }
         };
     }
 }
