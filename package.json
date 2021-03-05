@@ -1,6 +1,6 @@
 {
   "name": "react-class-state",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Easy State Management For React With Classes",
   "main": "index.js",
   "scripts": {
