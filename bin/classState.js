@@ -16,13 +16,13 @@ class ClassState {
         this.subscribers = new Set();
         this.setState = (setter) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const previousState = Object.assign({}, this);
+                const previousState = JSON.stringify(this);
                 if (!(typeof setter === "function" && !(yield setter(this)))) {
                     const nextState = typeof setter === "function" ? yield setter(this) : setter;
                     Object.assign(this, nextState);
                 }
-                if (JSON.stringify(this) !== JSON.stringify(previousState)) {
-                    this.subscribers.forEach((sub) => sub(this, previousState));
+                if (JSON.stringify(this) !== previousState) {
+                    this.subscribers.forEach((sub) => sub(this, JSON.parse(previousState)));
                     this.reRenderState();
                 }
             }

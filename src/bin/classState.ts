@@ -13,15 +13,14 @@ export class ClassState {
     setter: (((currentState: Hide<this>) => Partial<Hide<this>>) | Partial<Hide<this>>) | ((state: Hide<this>) => void)
   ) => {
     try {
-      const previousState = { ...this }
+      const previousState = JSON.stringify(this)
       if (!(typeof setter === "function" && !(await setter(this)))) {
         const nextState: void | Partial<Hide<this>> | Promise<void> =
           typeof setter === "function" ? await setter(this) : setter
         Object.assign(this, nextState)
       }
-
-      if (JSON.stringify(this) !== JSON.stringify(previousState)) {
-        this.subscribers.forEach((sub) => sub(this, previousState))
+      if (JSON.stringify(this) !== previousState) {
+        this.subscribers.forEach((sub) => sub(this, JSON.parse(previousState)))
         this.reRenderState()
       }
     } catch (error) {
