@@ -37,6 +37,22 @@ const todoState = new TodoState()
 todoState.fetchTodos()
 ```
 
+#### Creating State as Pure Without Actions
+
+```TS
+class TodoState extends ClassState { todos: ITodo[] = [] }
+
+const todoState = new TodoState()
+const {todos,setTodos} = todoState.getState()
+```
+
+#### Creating State Easily Without Class (It will create class for you, don't worry)
+
+```TS
+const todoState = LazyClassState({ todos: ITodo[] = [] })
+const {todos,setTodos} = todoState.getState()
+```
+
 ### API after creating (Usage and examples are both below and in examples folder)
 
 ```TS
@@ -62,15 +78,6 @@ todoState.fetchTodos()
   // This will re-render only once and whatever you change here will also change the React Component State
   currentState.todos.push(todo)
   })
-```
-
-#### Creating State as Pure Without Actions
-
-```TS
-class TodoState extends ClassState { todos: ITodo[] = [] }
-
-const todoState = new TodoState()
-const {todos,setTodos} = todoState.getState()
 ```
 
 #### Usage in React

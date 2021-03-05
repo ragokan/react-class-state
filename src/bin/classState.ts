@@ -11,14 +11,17 @@ export class ClassState {
   public setState = async (
     setter: (((currentState: Hide<this>) => Partial<Hide<this>>) | Partial<Hide<this>>) | ((state: Hide<this>) => void)
   ) => {
-    let nextState: void | Partial<Hide<this>> | Promise<void>
     const previousState = { ...this }
     if (!(typeof setter === "function" && !(await setter(this)))) {
-      nextState = typeof setter === "function" ? await setter(this) : setter
+      const nextState: void | Partial<Hide<this>> | Promise<void> =
+        typeof setter === "function" ? await setter(this) : setter
       Object.assign(this, nextState)
     }
-    this.subscribers.forEach((sub) => sub(this, previousState))
-    this.reRenderState()
+
+    if (JSON.stringify(this) !== JSON.stringify(previousState)) {
+      this.subscribers.forEach((sub) => sub(this, previousState))
+      this.reRenderState()
+    }
   }
 
   public getState = (): HideGet<this> => {
@@ -30,9 +33,10 @@ export class ClassState {
     return this
   }
 
-  public subscribeState = (subscriber: StateSubscriber<this>): StateSubscriber<this> => {
+  public subscribeState = (subscriber: StateSubscriber<this>) => {
     this.subscribers.add(subscriber)
-    return subscriber
+
+    return () => this.subscribers.delete(subscriber)
   }
 
   private initForce = (): void => {
