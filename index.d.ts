@@ -1,16 +1,15 @@
-declare type GetStateSettings = {
-    vanilla?: boolean;
-};
-declare type StateSubscriber<T> = (currentState: T, previousState: T) => void;
+declare type StateSubscriber<T = Object> = (currentState: T, previousState: T) => void;
+declare type Hide<T> = Pick<T, Exclude<keyof T, "useState" | "getState" | "setState" | "subscribeState">>;
+declare type HideGet<T> = Pick<T, Exclude<keyof T, "getState">>;
+declare type HideUse<T> = Pick<T, Exclude<keyof T, "useState">>;
 export declare class ClassState {
-    count: number;
     private force;
     private subscribers;
-    setState(setter: (state: this) => Promise<void> | void): Promise<void>;
-    getState(settings?: GetStateSettings): this;
-    watchState(): void;
-    subscribeState(subscriber: StateSubscriber<this>): StateSubscriber<this>;
+    setState: (setter: Partial<Hide<this>> | ((currentState: Hide<this>) => Partial<Hide<this>>) | ((state: Hide<this>) => void)) => Promise<void>;
+    getState: () => HideGet<this>;
+    useState: () => HideUse<this>;
+    subscribeState: (subscriber: StateSubscriber<this>) => StateSubscriber<this>;
     private initForce;
-    private updateState;
+    private reRenderState;
 }
 export default ClassState;

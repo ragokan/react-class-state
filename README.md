@@ -14,9 +14,9 @@ npm install react-class-state
 yarn add react-class-state
 ```
 
-#### Creating State
+### Creating State
 
-```TSX
+```TS
 import ClassState from "react-class-state"
 import { ITodo } from "./types/ITodo"
 
@@ -24,7 +24,8 @@ class TodoState extends ClassState {
   todos: ITodo[] = []
 
   // If you want, you can use actions inside the class, if you want you can also follow the next usages
-  async fetchTodos() {
+  // Note : Always use arrow functions
+  async fetchTodos = () => {
     const response = await fetch("https://jsonplaceholder.typicode.com/todos")
     const data = await response.json()
     this.setState((state) => (state.todos = data))
@@ -36,31 +37,48 @@ const todoState = new TodoState()
 todoState.fetchTodos()
 ```
 
-#### Other Way To Change State
-
-```TSX
-// You can change the state from anywhere, in regular files or inside class components/function components, no matter whether it is async or not,
-const response = await fetch("https://jsonplaceholder.typicode.com/todos")
-todoState.setState(async (state) => (state.todos = await response.json()))  */
-```
-
-#### Subscribe State
+### API after creating (Usage and examples are both below and in examples folder)
 
 ```TS
-todoState.subscribeState((currentState, previousState) => {
-  console.log({ currentState })
-  console.log({ previousState })
+  // Get state outside React
+  const {todos, setState, fetchTodos} = todoState.getState()
+
+  // Get state inside React
+  const {todos, setState, fetchTodos} = todoState.useState()
+
+  // Set State
+  const todo = { text: "I am a todo", completed: false }
+  /* First */ todoState.setState({ todos: [todo] /*other state changes*/ })
+  /* Second */ todoState.setState((prevState) => ({ todos: [...prevState.todos, todo] /*other state changes*/ }))
+  /* Third */ todoState.setState((state) => {
+    state.todos.push(todo)
+  })
+
+  // Subscribe State
+  todoState.subscribeState((currentState,previousState) => {
+    console.log("currentState:", currentState)
+    console.log("previousState:", previousState)
+
   // This will re-render only once and whatever you change here will also change the React Component State
-  // Don't use setState here if you don't want a stackoverflow
-  todoState.push({ id:101, title:"New todo from subscribe!" })
-})
+  currentState.todos.push(todo)
+  })
 ```
 
-#### Usage
+#### Creating State as Pure Without Actions
+
+```TS
+class TodoState extends ClassState { todos: ITodo[] = [] }
+
+const todoState = new TodoState()
+const {todos,setTodos} = todoState.getState()
+```
+
+#### Usage in React
 
 ```TSX
 const App = () => {
-  const { todos } = todoState.getState()
+  // If you useState, it will cause re-rendering of the React whenever the value changes, so you have to use it.
+  const { todos } = todoState.useState()
   return (
     <div>
       {todos.map((todo) => (
@@ -71,32 +89,35 @@ const App = () => {
 }
 ```
 
-#### You can use the system however you want.
+#### You can also get state outside of React.
 
-```TSX
-// If you use 'todoState.watchState()' in your parent, you don't need to use it in another file.
-const App = () => {
-  todoState.watchState()
-  // Rest of the App
-}
-
+```TS
+  const { todos, setState } = todoState.getState()
+  setState(/* your code here */)
 ```
 
 #### Changing state inside components
 
 ```TSX
 const App = () => {
-  const { setState } = todoState.getState()
+  const { setState } = todoState.useState()
 
   useEffect(() => {
     const fetchTodos = async () => {
       const response = await fetch("https://jsonplaceholder.typicode.com/todos")
-      const data = await response.json()
-      setState((state) => (state.todos = data))
+      setState((state) => (state.todos = await response.json()))
     }
     fetchTodos()
   }, [])
 
   // Rest of the App
 }
+```
+
+#### Other Ways To Change State
+
+```TSX
+// You can change the state from anywhere, in regular files or inside class components/function components, no matter whether it is async or not,
+const response = await fetch("https://jsonplaceholder.typicode.com/todos")
+todoState.setState(async (state) => (state.todos = await response.json()))
 ```

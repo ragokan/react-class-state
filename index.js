@@ -13,36 +13,35 @@ exports.ClassState = void 0;
 const react_1 = require("react");
 class ClassState {
     constructor() {
-        this.count = 5;
         this.subscribers = new Set();
-    }
-    setState(setter) {
-        return __awaiter(this, void 0, void 0, function* () {
+        this.setState = (setter) => __awaiter(this, void 0, void 0, function* () {
+            let nextState;
             const previousState = Object.assign({}, this);
-            yield setter(this);
-            const currentState = this;
-            this.subscribers.forEach((sub) => sub(currentState, previousState));
-            this.updateState();
+            if (!(typeof setter === "function" && !(yield setter(this)))) {
+                nextState = typeof setter === "function" ? yield setter(this) : setter;
+                Object.assign(this, nextState);
+            }
+            this.subscribers.forEach((sub) => sub(this, previousState));
+            this.reRenderState();
         });
-    }
-    getState(settings = {}) {
-        if (!settings.vanilla)
+        this.getState = () => {
+            return this;
+        };
+        this.useState = () => {
             this.initForce();
-        return this;
-    }
-    watchState() {
-        this.initForce();
-    }
-    subscribeState(subscriber) {
-        this.subscribers.add(subscriber);
-        return subscriber;
-    }
-    initForce() {
-        const [, force] = react_1.useReducer((c) => c + 1, 0);
-        this.force = force;
-    }
-    updateState() {
-        this.force && this.force();
+            return this;
+        };
+        this.subscribeState = (subscriber) => {
+            this.subscribers.add(subscriber);
+            return subscriber;
+        };
+        this.initForce = () => {
+            const [, force] = react_1.useReducer((c) => c + 1, 0);
+            this.force = force;
+        };
+        this.reRenderState = () => {
+            this.force && this.force();
+        };
     }
 }
 exports.ClassState = ClassState;
