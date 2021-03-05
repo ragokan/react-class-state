@@ -11,16 +11,20 @@ export class ClassState {
   public setState = async (
     setter: (((currentState: Hide<this>) => Partial<Hide<this>>) | Partial<Hide<this>>) | ((state: Hide<this>) => void)
   ) => {
-    const previousState = { ...this }
-    if (!(typeof setter === "function" && !(await setter(this)))) {
-      const nextState: void | Partial<Hide<this>> | Promise<void> =
-        typeof setter === "function" ? await setter(this) : setter
-      Object.assign(this, nextState)
-    }
+    try {
+      const previousState = { ...this }
+      if (!(typeof setter === "function" && !(await setter(this)))) {
+        const nextState: void | Partial<Hide<this>> | Promise<void> =
+          typeof setter === "function" ? await setter(this) : setter
+        Object.assign(this, nextState)
+      }
 
-    if (JSON.stringify(this) !== JSON.stringify(previousState)) {
-      this.subscribers.forEach((sub) => sub(this, previousState))
-      this.reRenderState()
+      if (JSON.stringify(this) !== JSON.stringify(previousState)) {
+        this.subscribers.forEach((sub) => sub(this, previousState))
+        this.reRenderState()
+      }
+    } catch (error) {
+      console.log(error || "An error happened while changing the state!")
     }
   }
 
@@ -29,7 +33,13 @@ export class ClassState {
   }
 
   public useState = (): HideUse<this> => {
-    this.initForce()
+    try {
+      this.initForce()
+    } catch (error) {
+      const errorMessage =
+        "\n An error happened while trying to init the state, it is probably because you are using 'useState' function outside of React function component."
+      console.log(error ? error + errorMessage : errorMessage)
+    }
     return this
   }
 
@@ -45,6 +55,10 @@ export class ClassState {
   }
 
   private reRenderState = (): void => {
-    this.force && this.force()
+    try {
+      this.force && this.force()
+    } catch (error) {
+      console.log(error || "An error happened while re-rendering the state!")
+    }
   }
 }
