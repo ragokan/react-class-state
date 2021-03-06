@@ -21,9 +21,8 @@ class ClassState {
                     const nextState = typeof setter === "function" ? yield setter(this) : setter;
                     Object.assign(this, nextState);
                 }
-                if (JSON.stringify(this) !== previousState) {
+                if (!Object.is(this, previousState)) {
                     this.subscribers.forEach((sub) => sub(this, JSON.parse(previousState)));
-                    this.reRenderState();
                 }
             }
             catch (error) {
@@ -34,30 +33,22 @@ class ClassState {
             return this;
         };
         this.useState = () => {
-            try {
-                this.initForce();
-            }
-            catch (error) {
-                const errorMessage = "\n An error happened while trying to init the state, it is probably because you are using 'useState' function outside of React function component.";
-                console.log(error ? error + errorMessage : errorMessage);
-            }
+            const [, force] = react_1.useReducer((c) => c + 1, 0);
+            react_1.useEffect(() => {
+                const unsub = this.subscribeState((_, prev) => {
+                    if (!Object.is(this, prev)) {
+                        force();
+                    }
+                });
+                return unsub;
+            }, []);
             return this;
         };
         this.subscribeState = (subscriber) => {
             this.subscribers.add(subscriber);
-            return () => this.subscribers.delete(subscriber);
-        };
-        this.initForce = () => {
-            const [, force] = react_1.useReducer((c) => c + 1, 0);
-            this.force = force;
-        };
-        this.reRenderState = () => {
-            try {
-                this.force && this.force();
-            }
-            catch (error) {
-                console.log(error || "An error happened while re-rendering the state!");
-            }
+            return () => {
+                this.subscribers.delete(subscriber);
+            };
         };
     }
 }
